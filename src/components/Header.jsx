@@ -1,13 +1,14 @@
 import React from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth, normalizeRole } from '../context/AuthContext';
 
 export default function Header({ currentSection, setCurrentSection, theme, toggleTheme, onOpenAuthModal }) {
   const { authState, logout } = useAuth();
   const { loggedIn, userName, userRole } = authState;
+  const role = normalizeRole(userRole);
 
   const handleNavClick = (section, e) => {
     e.preventDefault();
-    if ((section === 'my-bookings-section' || section === 'admin-section') && !loggedIn) {
+    if ((section === 'my-bookings-section' || section === 'admin-section' || section === 'owner-section') && !loggedIn) {
       onOpenAuthModal('login', section);
       return;
     }
@@ -52,14 +53,22 @@ export default function Header({ currentSection, setCurrentSection, theme, toggl
           >
             <i className="fa-solid fa-ticket"></i> Vé Của Tôi
           </a>
-          {(userRole === 'admin' || userRole === 'owner' || userRole === 'chu_san' || userRole === 'chusan') && (
+          {role === 'admin' && (
             <a
               href="#"
               className={`nav-link ${currentSection === 'admin-section' ? 'active' : ''}`}
               onClick={(e) => handleNavClick('admin-section', e)}
             >
-              <i className={`fa-solid ${userRole === 'admin' ? 'fa-user-gear' : 'fa-building-user'}`}></i>{' '}
-              {userRole === 'admin' ? 'Quản trị' : 'Quản lý sân'}
+              <i className="fa-solid fa-user-gear"></i> Quản trị
+            </a>
+          )}
+          {(role === 'owner' || role === 'chu_san' || role === 'chusan') && (
+            <a
+              href="#"
+              className={`nav-link ${currentSection === 'owner-section' ? 'active' : ''}`}
+              onClick={(e) => handleNavClick('owner-section', e)}
+            >
+              <i className="fa-solid fa-building-user"></i> Chủ sân
             </a>
           )}
         </nav>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider, useAuth, normalizeRole } from './context/AuthContext';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
 import FilterSection from './components/FilterSection';
@@ -14,6 +14,9 @@ import OwnerSection from './components/OwnerSection';
 function MainApp() {
   const { authState, reloadAuth } = useAuth();
   const { loggedIn, userRole } = authState;
+  const normalizedRole = normalizeRole(userRole);
+  const isAdminRole = normalizedRole === 'admin';
+  const isOwnerRole = normalizedRole === 'chu_san' || normalizedRole === 'owner' || normalizedRole === 'chusan';
 
   const [currentSection, setCurrentSection] = useState('home-section');
 
@@ -275,7 +278,7 @@ function MainApp() {
           />
         )}
 
-        {currentSection === 'admin-section' && (
+        {currentSection === 'admin-section' && isAdminRole && (
           <AdminSection
             pitches={pitches}
             bookings={bookings}
@@ -284,7 +287,7 @@ function MainApp() {
           />
         )}
 
-        {currentSection === 'owner-section' && (
+        {currentSection === 'owner-section' && isOwnerRole && (
           <OwnerSection
             showToast={showToast}
             onPitchStatusChanged={loadPitches}
@@ -292,28 +295,45 @@ function MainApp() {
         )}
       </main>
 
-      <footer className="footer">
-        <div className="footer-content">
-          <div className="footer-section">
-            <h4>SanCoPro</h4>
-            <p>Hệ thống đặt sân bóng trực tuyến</p>
-          </div>
-          <div className="footer-section">
-            <h4>Liên hệ</h4>
-            <p>📞 1900-xxxx</p>
-            <p>📧 support@sancopro.com</p>
-          </div>
-          <div className="footer-section">
-            <h4>Theo dõi</h4>
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <i className="fa-brands fa-facebook"></i>
-              <i className="fa-brands fa-instagram"></i>
-              <i className="fa-brands fa-twitter"></i>
+      <footer className="app-footer">
+        <div className="container footer-grid">
+          <div className="footer-brand">
+            <div className="logo">
+              <i className="fa-solid fa-circle-nodes logo-icon"></i>
+              <span>SanCo<span className="highlight">Pro</span></span>
             </div>
+            <p>
+              Nền tảng đặt sân bóng cỏ nhân tạo hàng đầu Việt Nam. Nhanh chóng,
+              chuyên nghiệp và uy tín.
+            </p>
+            <div className="social-links">
+              <a href="#"><i className="fa-brands fa-facebook"></i></a>
+              <a href="#"><i className="fa-brands fa-instagram"></i></a>
+              <a href="#"><i className="fa-brands fa-youtube"></i></a>
+            </div>
+          </div>
+
+          <div className="footer-links">
+            <h4>Hỗ Trợ</h4>
+            <ul>
+              <li><a href="#">Hướng dẫn đặt sân</a></li>
+              <li><a href="#">Chính sách hoàn tiền</a></li>
+              <li><a href="#">Điều khoản sử dụng</a></li>
+              <li><a href="#">Liên hệ quảng cáo</a></li>
+            </ul>
+          </div>
+
+          <div className="footer-contact">
+            <h4>Liên Hệ</h4>
+            <p><i className="fa-solid fa-location-dot"></i> 14 Doãn Uẫn - Ngũ Hành Sơn - Đà Nẵng</p>
+            <p><i className="fa-solid fa-phone"></i> Hotline: 0828937914</p>
+            <p><i className="fa-solid fa-envelope"></i> phannam151001@gmail.com</p>
           </div>
         </div>
         <div className="footer-bottom">
-          <p>&copy; 2024 SanCoPro. All rights reserved.</p>
+          <div className="container">
+            <p>&copy; 2026 SanCoPro. Tất cả quyền được bảo lưu.</p>
+          </div>
         </div>
       </footer>
 

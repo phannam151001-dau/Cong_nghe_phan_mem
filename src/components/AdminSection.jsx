@@ -1,19 +1,111 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function AdminSection({ pitches, bookings, onTogglePitchStatus, showToast }) {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('accounts');
+  const [accounts, setAccounts] = useState([]);
+  const [loadingAccounts, setLoadingAccounts] = useState(false);
+  const [accountError, setAccountError] = useState('');
 
   const totalRevenue = bookings.filter(b => b.status === 'confirmed').reduce((sum, b) => sum + Number(b.totalPrice || 0), 0);
   const activePitches = pitches.filter(p => p.status === 'available').length;
   const todayStr = new Date().toISOString().split('T')[0];
   const todayBookings = bookings.filter(b => b.date === todayStr).length;
 
+  const normalizeRoleDisplay = (role) => {
+    const normalized = String(role || '').toLowerCase();
+    if (normalized === 'admin') return 'Quản trị viên';
+    if (normalized === 'chu_san' || normalized === 'chusan' || normalized === 'owner') return 'Chủ sân';
+    return 'Khách hàng';
+  };
+
+  const loadAccounts = async () => {
+    setLoadingAccounts(true);
+    setAccountError('');
+
+    try {
+      const response = await fetch('/admin.php', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        credentials: 'same-origin'
+      });
+
+      const text = await response.text();
+      let result = { success: false, message: 'Không thể tải danh sách tài khoản.' };
+
+      try {
+        result = JSON.parse(text);
+      } catch (error) {
+        result.message = text || result.message;
+      }
+
+      if (response.ok && result.success && Array.isArray(result.accounts)) {
+        setAccounts(result.accounts);
+      } else {
+        setAccounts([]);
+        const message = result.message || 'Không thể tải danh sách tài khoản.';
+        setAccountError(message);
+        showToast(message, 'danger');
+      }
+    } catch (error) {
+      console.error(error);
+      setAccounts([]);
+      setAccountError('Lỗi kết nối khi tải tài khoản.');
+      showToast('Lỗi kết nối khi tải tài khoản.', 'danger');
+    } finally {
+      setLoadingAccounts(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'accounts') {
+      loadAccounts();
+    }
+  }, [activeTab]);
+
   const handleTogglePitch = (pitchId, isChecked) => {
     const newStatus = isChecked ? 'available' : 'maintenance';
     onTogglePitchStatus(pitchId, newStatus);
   };
 
+  const handleUpdateRole = async (accountId, nextRole) => {
+    if (!accountId || !nextRole) return;
+
+    try {
+      const body = new URLSearchParams({
+        user_id: String(accountId),
+        vai_tro: nextRole
+      }).toString();
+
+      const response = await fetch('/vaitro.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body
+      });
+
+      const text = await response.text();
+      let result = { success: false, message: 'Không nhận được phản hồi từ máy chủ.' };
+      try {
+        result = JSON.parse(text);
+      } catch (error) {
+        result.message = text || result.message;
+      }
+
+      if (result.success) {
+        setAccounts(prev => prev.map(account => account.id === accountId ? { ...account, role: nextRole } : account));
+        showToast(result.message || 'Cập nhật quyền thành công.', 'success');
+      } else {
+        showToast(result.message || 'Không thể cập nhật quyền.', 'danger');
+      }
+    } catch (error) {
+      console.error(error);
+      showToast('Lỗi kết nối khi cập nhật quyền.', 'danger');
+    }
+  };
+
   const tabs = [
+    { key: 'accounts', label: 'Quản lý tài khoản', icon: 'fa-users' },
     { key: 'overview', label: 'Tổng quan', icon: 'fa-chart-line' },
     { key: 'pitches', label: 'Quản lý sân', icon: 'fa-futbol' },
     { key: 'bookings', label: 'Lịch đặt', icon: 'fa-calendar-days' },
@@ -144,6 +236,90 @@ export default function AdminSection({ pitches, bookings, onTogglePitchStatus, s
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {activeTab === 'accounts' && (
+        <div className="admin-panel" style={{ display: 'block' }}>
+          <h3><i className="fa-solid fa-users-gear" style={{ marginRight: '0.5rem' }}></i> Danh sách tài khoản</h3>
+
+          {loadingAccounts ? (
+            <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-muted)' }}>
+              <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '1.7rem' }}></i>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gap: '0.8rem', marginTop: '0.8rem' }}>
+              {accountError && (
+                <div style={{ padding: '1rem', borderRadius: '14px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', color: '#fca5a5' }}>
+                  <div style={{ marginBottom: '0.75rem' }}>{accountError}</div>
+                  <button
+                    type="button"
+                    onClick={loadAccounts}
+                    style={{ border: 'none', borderRadius: '999px', background: '#10b981', color: '#fff', padding: '0.55rem 0.9rem', cursor: 'pointer', fontWeight: 600 }}
+                  >
+                    Thử lại
+                  </button>
+                </div>
+              )}
+
+              {!accountError && accounts.length === 0 ? (
+                <div style={{ padding: '1rem', borderRadius: '14px', background: 'rgba(255,255,255,0.05)', color: 'var(--color-text-muted)' }}>
+                  Chưa có tài khoản nào.
+                </div>
+              ) : (
+                !accountError && accounts.map(account => {
+                  const isAdmin = String(account.role || '').toLowerCase() === 'admin';
+                  return (
+                    <div
+                      key={account.id}
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: '1rem',
+                        padding: '0.8rem 1rem',
+                        background: 'rgba(255,255,255,0.05)',
+                        borderRadius: '14px',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        flexWrap: 'wrap'
+                      }}
+                    >
+                      <div>
+                        <strong>{account.name || account.username || `TK-${account.id}`}</strong><br />
+                        <small style={{ color: 'var(--color-text-muted)' }}>
+                          {account.username || 'No username'} • {normalizeRoleDisplay(account.role)}
+                          {account.phone ? ` • ${account.phone}` : ''}
+                          {isAdmin ? ' ⚠️ Admin' : ''}
+                        </small>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        <select
+                          value={String(account.role || 'khach_hang').toLowerCase()}
+                          disabled={isAdmin}
+                          onChange={(event) => handleUpdateRole(account.id, event.target.value)}
+                          style={{
+                            border: 'none',
+                            borderRadius: '999px',
+                            padding: '0.45rem 0.75rem',
+                            cursor: isAdmin ? 'not-allowed' : 'pointer',
+                            background: isAdmin ? '#999' : '#667eea',
+                            color: '#fff',
+                            minWidth: '160px',
+                            fontSize: '0.9rem'
+                          }}
+                        >
+                          <option value="khach_hang">Khách hàng</option>
+                          <option value="chu_san">Chủ sân</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          )}
         </div>
       )}
     </section>

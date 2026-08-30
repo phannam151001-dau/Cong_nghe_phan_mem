@@ -37,6 +37,7 @@ export default function BookingModal({
   const [bookingDate, setBookingDate] = useState(getOffsetDateString(0));
   const [selectedSlots, setSelectedSlots] = useState([]);
   const [selectedServices, setSelectedServices] = useState([]);
+  const [paymentMethod, setPaymentMethod] = useState('cash');
   const [customerName, setCustomerName] = useState(authState.userName || '');
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerNote, setCustomerNote] = useState('');
@@ -53,6 +54,7 @@ export default function BookingModal({
       setBookingDate(getOffsetDateString(0));
       setSelectedSlots([]);
       setSelectedServices([]);
+      setPaymentMethod('cash');
       setCustomerNote('');
     }
   }, [isOpen, pitch]);
@@ -128,12 +130,14 @@ export default function BookingModal({
       return;
     }
 
-    const pitchCost = calculatePitchTotal();
     const grandTotal = calculateGrandTotal();
     const sortedSlots = [...selectedSlots].sort();
     const slotLabels = sortedSlots.map(slotId => TIME_SLOTS.find(ts => ts.id === slotId)?.label || slotId);
+    const serviceValues = selectedServices
+      .map((svc) => String(svc.id ?? svc.ma_dich_vu ?? svc.value ?? '').trim())
+      .filter(Boolean);
 
-    const payload = {
+    const buildPayload = (selectedServiceValue) => ({
       pitch_id: String(pitch.id).replace('pitch-', ''),
       ten: customerName,
       sdt: customerPhone,
@@ -141,17 +145,44 @@ export default function BookingModal({
       ngay_dat: bookingDate,
       khung_gio: slotLabels.join(', '),
       thoi_luong: selectedSlots.length * 60,
-      gia: grandTotal
+      gia: grandTotal,
+      ma_dich_vu: selectedServiceValue,
+      payment_method: paymentMethod
+    });
+
+    const parseJsonResponse = async (response) => {
+      const text = await response.text();
+      if (!text) {
+        return { success: false, message: 'Không nhận được phản hồi từ máy chủ.' };
+      }
+
+      try {
+        return JSON.parse(text);
+      } catch {
+        return { success: false, message: text || 'Lỗi phản hồi từ máy chủ.' };
+      }
+    };
+
+    const trySubmit = async (serviceValue) => {
+      const response = await fetch('/datsan.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(buildPayload(serviceValue))
+      });
+
+      const result = await parseJsonResponse(response);
+      return { response, result };
     };
 
     try {
-      const response = await fetch("/datsan.php", {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      const serviceValue = serviceValues.join(',') || '';
+      let { result } = await trySubmit(serviceValue);
 
-      const result = await response.json();
+      if (!result.success && serviceValues.length > 1) {
+        const fallbackValue = serviceValues[0] || '';
+        const fallback = await trySubmit(fallbackValue);
+        result = fallback.result;
+      }
 
       if (!result.success) {
         showToast(result.message || 'Lỗi đặt sân!', 'danger');
@@ -177,7 +208,7 @@ export default function BookingModal({
       onBookingSuccess(newBooking);
     } catch (error) {
       console.error(error);
-      showToast('Lỗi kết nối!', 'danger');
+      showToast('Lỗi kết nối khi đặt sân. Vui lòng thử lại.', 'danger');
     }
   };
 
@@ -356,6 +387,46 @@ export default function BookingModal({
                       <span>Tiền sân:</span>
                       <strong>{calculatePitchTotal().toLocaleString('vi-VN')}đ</strong>
                     </div>
+
+                    {selectedServices.length > 0 && (
+                      <div className="summary-row summary-services">
+                        <span>Dịch vụ:</span>
+                        <strong>
+                          {selectedServices
+                            .map((service) => `${service.name} (${Number(service.price || 0).toLocaleString('vi-VN')}đ)`)
+                            .join(', ')}
+                        </strong>
+                      </div>
+                    )}
+
+                    <div className="summary-row">
+                      <span>Phí dịch vụ:</span>
+                      <strong>{calculateServicesTotal().toLocaleString('vi-VN')}đ</strong>
+                    </div>
+
+                    <div className="payment-options">
+                      <label className="payment-option">
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          value="cash"
+                          checked={paymentMethod === 'cash'}
+                          onChange={(e) => setPaymentMethod(e.target.value)}
+                        />
+                        <span>Thanh toán khi đến sân</span>
+                      </label>
+                      <label className="payment-option">
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          value="bank"
+                          checked={paymentMethod === 'bank'}
+                          onChange={(e) => setPaymentMethod(e.target.value)}
+                        />
+                        <span>Chuyển khoản / thanh toán online</span>
+                      </label>
+                    </div>
+
                     <div className="summary-divider"></div>
                     <div className="summary-total-row">
                       <span>TỔNG:</span>
