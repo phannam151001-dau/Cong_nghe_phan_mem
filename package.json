@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "start \"SanCoPro Backend\" /b php -S localhost:8000 -t backend && vite",
+    "backend": "php -S localhost:8000 -t backend",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
