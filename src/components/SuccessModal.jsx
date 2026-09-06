@@ -1,5 +1,5 @@
 import React from 'react';
-
+//Cửa sổ thông báo thành công-Giao diện hiển thị thông báo thành công sau khi đặt sân, bao gồm mã vé, thông tin sân, ngày, giờ và tổng giá
 const TIME_SLOTS = [
   { id: "06-07", label: "06:00 - 07:00" },
   { id: "07-08", label: "07:00 - 08:00" },

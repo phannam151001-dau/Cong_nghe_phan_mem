@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-
+//Cửa sổ xác thực-Đăng nhập, đăng ký, đăng xuất
 export default function AuthModal({ isOpen, onClose, initialMode = 'login', showToast }) {
   const { login, register } = useAuth();
   const [mode, setMode] = useState(initialMode);

@@ -1,5 +1,5 @@
 import React from 'react';
-
+//Thẻ sân bóng-Giao diện hiển thị thông tin chi tiết của sân bóng, bao gồm hình ảnh, tên, loại, địa chỉ, tiện ích, đánh giá và nút đặt sân
 export default function PitchCard({ pitch, onBookClick }) {
   const isMaintenance = pitch.status === 'maintenance';
 

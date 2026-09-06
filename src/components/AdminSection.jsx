@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
+//Khu vực quản trị viên-Giao diện quản trị viên, bao gồm quản lý tài khoản, sân bóng, lịch đặt và thống kê
 export default function AdminSection({ pitches, bookings, onTogglePitchStatus, showToast }) {
   const [activeTab, setActiveTab] = useState('accounts');
   const [accounts, setAccounts] = useState([]);

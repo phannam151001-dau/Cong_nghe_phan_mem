@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth, normalizeRole } from '../context/AuthContext';
-
+//Phần đầu trang-Giao diện phần đầu trang, điều hướng, đăng nhập/đăng xuất, hiển thị thông tin người dùng
 export default function Header({ currentSection, setCurrentSection, theme, toggleTheme, onOpenAuthModal }) {
   const { authState, logout } = useAuth();
   const { loggedIn, userName, userRole } = authState;

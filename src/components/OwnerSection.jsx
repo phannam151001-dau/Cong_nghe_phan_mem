@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
+//Khu vực chủ sân-Giao diện quản lý sân bóng của chủ sân, bao gồm quản lý sân, lịch đặt, thanh toán và doanh thu
 export default function OwnerSection({ showToast, onPitchStatusChanged }) {
   const [pitches, setPitches] = useState([]);
   const [bookings, setBookings] = useState([]);

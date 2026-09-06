@@ -1,5 +1,5 @@
 import React from 'react';
-
+//Khu vực bộ lọc-Giao diện bộ lọc tìm kiếm sân bóng, bao gồm tìm kiếm theo tên, loại sân, giá và sắp xếp
 export default function FilterSection({
   query,
   setQuery,

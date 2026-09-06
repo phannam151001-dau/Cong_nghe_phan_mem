@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-
+//Lịch sử đặt sân của tôi-Giao diện hiển thị danh sách các vé đặt sân của người dùng, bao gồm thông tin sân, ngày, giờ, trạng thái và tổng giá
 const TIME_SLOTS = [
   { id: "06-07", label: "06:00 - 07:00" },
   { id: "07-08", label: "07:00 - 08:00" },

@@ -1,5 +1,5 @@
 import React from 'react';
-
+//Khu vực giới thiệu chính-Giao diện giới thiệu chính, thông tin nổi bật, số liệu thống kê và nút điều hướng đến khu vực đặt sân
 export default function HeroSection() {
   const handleScrollToPitches = (e) => {
     e.preventDefault();

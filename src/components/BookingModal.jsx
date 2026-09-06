@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-
+//Cửa sổ đặt sân-Giao diện đặt sân bóng, chọn khung giờ, dịch vụ, xác nhận thông tin và thanh toán
 const TIME_SLOTS = [
   { id: "06-07", label: "06:00 - 07:00", multiplier: 1.0 },
   { id: "07-08", label: "07:00 - 08:00", multiplier: 1.0 },
