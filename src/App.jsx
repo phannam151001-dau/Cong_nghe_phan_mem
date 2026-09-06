@@ -114,9 +114,11 @@ function MainApp() {
     loadPitches();
     loadServices();
 
-    setTimeout(() => {
+    const welcomeTimeout = setTimeout(() => {
       showToast("Chào mừng bạn đến với SanCoPro! Trải nghiệm đặt sân ngay.", 'info');
     }, 800);
+
+    return () => clearTimeout(welcomeTimeout);
   }, []);
 
   const getFilteredPitches = () => {
