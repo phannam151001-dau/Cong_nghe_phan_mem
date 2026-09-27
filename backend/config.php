@@ -11,10 +11,10 @@ if ($isLocal) {
     $password = '0828937914n';
     $dbname = 'san_co_pro';
 } else {
-    $servername = 'sql101.infinityfree.com';
-    $username = 'if0_42449933';
-    $password = '2451220030';
-    $dbname = 'if0_42449933_san_co_pro';
+    $servername = 'sql205.infinityfree.com';
+    $username = 'if0_43025028';
+    $password = '0828937914n';
+    $dbname = 'if0_43025028_san_co_pro';
 }
 
 $conn = new mysqli($servername, $username, $password, $dbname);
