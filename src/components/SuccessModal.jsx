@@ -1,4 +1,4 @@
-import React from 'react';
+import { createQrImageUrl } from '../utils/qr';
 //Cửa sổ thông báo thành công-Giao diện hiển thị thông báo thành công sau khi đặt sân, bao gồm mã vé, thông tin sân, ngày, giờ và tổng giá
 const TIME_SLOTS = [
   { id: "06-07", label: "06:00 - 07:00" },
@@ -34,7 +34,7 @@ export default function SuccessModal({ isOpen, onClose, booking, onViewBookings 
           <i className="fa-solid fa-circle-check success-check-icon"></i>
         </div>
         <h2>Đặt Sân Thành Công!</h2>
-        <p>Hệ thống đã xác nhận đơn đặt sân của bạn.</p>
+        <p>Đơn đã tạo thành công. QR mô phỏng chứa mã đơn và số tiền, chưa ghi nhận thanh toán.</p>
 
         <div className="ticket-box">
           <div className="ticket-top">
@@ -63,8 +63,12 @@ export default function SuccessModal({ isOpen, onClose, booking, onViewBookings 
             </div>
 
             <div className="ticket-qr-section">
-              <span className="mock-qr-code"><i className="fa-solid fa-qrcode"></i></span>
-              <span className="qr-label">MÃ QUÉT</span>
+              <img
+                className="ticket-qr-image"
+                src={createQrImageUrl(`SanCoPro|DON=${booking.id}|SO_TIEN=${Math.round(Number(booking.totalPrice) || 0)}`)}
+                alt={`Mã QR thanh toán đơn ${booking.id}`}
+              />
+              <span className="qr-label">QR MÔ PHỎNG</span>
             </div>
           </div>
 

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { createQrImageUrl } from '../utils/qr';
 //Cửa sổ đặt sân-Giao diện đặt sân bóng, chọn khung giờ, dịch vụ, xác nhận thông tin và thanh toán
 const TIME_SLOTS = [
   { id: "06-07", label: "06:00 - 07:00", multiplier: 1.0 },
@@ -37,7 +38,7 @@ export default function BookingModal({
   const [bookingDate, setBookingDate] = useState(getOffsetDateString(0));
   const [selectedSlots, setSelectedSlots] = useState([]);
   const [selectedServices, setSelectedServices] = useState([]);
-  const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [confirmedQrPayload, setConfirmedQrPayload] = useState('');
   const [customerName, setCustomerName] = useState(authState.userName || '');
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerNote, setCustomerNote] = useState('');
@@ -54,7 +55,7 @@ export default function BookingModal({
       setBookingDate(getOffsetDateString(0));
       setSelectedSlots([]);
       setSelectedServices([]);
-      setPaymentMethod('cash');
+      setConfirmedQrPayload('');
       setCustomerNote('');
     }
   }, [isOpen, pitch]);
@@ -103,8 +104,10 @@ export default function BookingModal({
   };
 
   const calculateGrandTotal = () => {
-    return calculatePitchTotal() + calculateServicesTotal();
+    return Math.round(calculatePitchTotal() + calculateServicesTotal());
   };
+
+  const paymentQrPayload = `SanCoPro|SO_TIEN=${calculateGrandTotal()}|SAN=${pitch.id}|NGAY=${bookingDate}`;
 
   const handleNextStep = () => {
     if (step === 1) {
@@ -147,7 +150,7 @@ export default function BookingModal({
       thoi_luong: selectedSlots.length * 60,
       gia: grandTotal,
       ma_dich_vu: selectedServiceValue,
-      payment_method: paymentMethod
+      payment_method: 'qr'
     });
 
     const parseJsonResponse = async (response) => {
@@ -404,28 +407,26 @@ export default function BookingModal({
                       <strong>{calculateServicesTotal().toLocaleString('vi-VN')}đ</strong>
                     </div>
 
-                    <div className="payment-options">
-                      <label className="payment-option">
-                        <input
-                          type="radio"
-                          name="paymentMethod"
-                          value="cash"
-                          checked={paymentMethod === 'cash'}
-                          onChange={(e) => setPaymentMethod(e.target.value)}
-                        />
-                        <span>Thanh toán khi đến sân</span>
-                      </label>
-                      <label className="payment-option">
-                        <input
-                          type="radio"
-                          name="paymentMethod"
-                          value="bank"
-                          checked={paymentMethod === 'bank'}
-                          onChange={(e) => setPaymentMethod(e.target.value)}
-                        />
-                        <span>Chuyển khoản / thanh toán online</span>
-                      </label>
+                    <div className="payment-qr-panel">
+                      <img
+                        className="payment-qr-image"
+                        src={createQrImageUrl(paymentQrPayload)}
+                        alt={`Mã QR thanh toán ${calculateGrandTotal().toLocaleString('vi-VN')} đồng`}
+                      />
+                      <div>
+                        <strong>Quét mã QR để thanh toán</strong>
+                        <span> Số tiền: {calculateGrandTotal().toLocaleString('vi-VN')}đ</span>
+                        <small>QR mô phỏng, không tự động trừ tiền hoặc xác nhận giao dịch.</small>
+                      </div>
                     </div>
+                    <label className="payment-qr-acknowledgement">
+                      <input
+                        type="checkbox"
+                        checked={confirmedQrPayload === paymentQrPayload}
+                        onChange={(event) => setConfirmedQrPayload(event.target.checked ? paymentQrPayload : '')}
+                      />
+                      <span>Tôi đã quét mã QR và xác nhận đúng số tiền.</span>
+                    </label>
 
                     <div className="summary-divider"></div>
                     <div className="summary-total-row">
@@ -455,7 +456,11 @@ export default function BookingModal({
                 Tiếp tục <i className="fa-solid fa-arrow-right"></i>
               </button>
             ) : (
-              <button className="btn btn-success" onClick={handleConfirmBooking}>
+              <button
+                className="btn btn-success"
+                disabled={confirmedQrPayload !== paymentQrPayload}
+                onClick={handleConfirmBooking}
+              >
                 <i className="fa-solid fa-check"></i> Xác nhận
               </button>
             )}

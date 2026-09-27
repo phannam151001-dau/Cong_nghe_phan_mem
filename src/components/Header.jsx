@@ -1,13 +1,15 @@
-import React from 'react';
+import { useState } from 'react';
 import { useAuth, normalizeRole } from '../context/AuthContext';
 //Phần đầu trang-Giao diện phần đầu trang, điều hướng, đăng nhập/đăng xuất, hiển thị thông tin người dùng
 export default function Header({ currentSection, setCurrentSection, theme, toggleTheme, onOpenAuthModal }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { authState, logout } = useAuth();
   const { loggedIn, userName, userRole } = authState;
   const role = normalizeRole(userRole);
 
   const handleNavClick = (section, e) => {
     e.preventDefault();
+    setMobileMenuOpen(false);
     if ((section === 'my-bookings-section' || section === 'admin-section' || section === 'owner-section') && !loggedIn) {
       onOpenAuthModal('login', section);
       return;
@@ -24,7 +26,7 @@ export default function Header({ currentSection, setCurrentSection, theme, toggl
 
   return (
     <header className="main-header">
-      <div className="container header-container">
+      <div className={`container header-container${mobileMenuOpen ? ' mobile-menu-open' : ''}`}>
         <a
           href="/"
           className="logo"
@@ -38,7 +40,18 @@ export default function Header({ currentSection, setCurrentSection, theme, toggl
           <span>SanCo<span className="highlight">Pro</span></span>
         </a>
 
-        <nav className="main-nav">
+        <button
+          className="mobile-menu-toggle"
+          type="button"
+          aria-label={mobileMenuOpen ? 'Đóng menu' : 'Mở menu'}
+          aria-expanded={mobileMenuOpen}
+          aria-controls="primary-navigation"
+          onClick={() => setMobileMenuOpen((open) => !open)}
+        >
+          <i className={`fa-solid ${mobileMenuOpen ? 'fa-xmark' : 'fa-bars'}`}></i>
+        </button>
+
+        <nav className="main-nav" id="primary-navigation">
           <a
             href="#"
             className={`nav-link ${currentSection === 'home-section' ? 'active' : ''}`}
@@ -93,6 +106,7 @@ export default function Header({ currentSection, setCurrentSection, theme, toggl
                 className="btn btn-secondary login-link"
                 onClick={(e) => {
                   e.preventDefault();
+                  setMobileMenuOpen(false);
                   onOpenAuthModal('login', currentSection);
                 }}
               >
@@ -103,6 +117,7 @@ export default function Header({ currentSection, setCurrentSection, theme, toggl
                 className="btn btn-primary"
                 onClick={(e) => {
                   e.preventDefault();
+                  setMobileMenuOpen(false);
                   onOpenAuthModal('register', currentSection);
                 }}
               >
