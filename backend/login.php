@@ -59,11 +59,11 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $tenDangNhapInput = trim($_POST['ten_dang_nhap'] ?? '');
+    $tenDangNhapInput = strtolower(trim($_POST['ten_dang_nhap'] ?? ''));
     $matKhau = trim($_POST['mat_khau'] ?? '');
 
     if ($tenDangNhapInput === '' || $matKhau === '') {
-        $message = 'Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.';
+        $message = 'Vui lòng nhập đầy đủ gmail và mật khẩu.';
         $messageType = 'error';
     }
     else {
@@ -105,7 +105,7 @@ if ($stmt === false) {
                 $messageType = 'error';
             }
         } else {
-            $message = 'Tên đăng nhập không tồn tại.';
+            $message = 'Gmail hoặc mật khẩu không đúng.';
             $messageType = 'error';
         }
 

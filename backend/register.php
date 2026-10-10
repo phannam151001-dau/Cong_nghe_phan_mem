@@ -7,7 +7,7 @@ require_once 'config.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $hoTen = trim($_POST['ho_ten'] ?? '');
-    $tenDangNhap = trim($_POST['ten_dang_nhap'] ?? '');
+    $tenDangNhap = strtolower(trim($_POST['ten_dang_nhap'] ?? ''));
     $soDienThoai = trim($_POST['so_dien_thoai'] ?? '');
     $matKhau = trim($_POST['mat_khau'] ?? '');
     $matKhauConfirm = trim($_POST['mat_khau_confirm'] ?? '');
@@ -25,25 +25,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($tenDangNhap)) {
         echo json_encode([
             'success' => false,
-            'message' => 'Vui lòng nhập tên đăng nhập.'
+            'message' => 'Vui lòng nhập gmail.'
         ], JSON_UNESCAPED_UNICODE);
         $conn->close();
         exit;
     }
 
-    if (strlen($tenDangNhap) < 3) {
+    if (!filter_var($tenDangNhap, FILTER_VALIDATE_EMAIL)) {
         echo json_encode([
             'success' => false,
-            'message' => 'Tên đăng nhập phải có ít nhất 3 ký tự.'
-        ], JSON_UNESCAPED_UNICODE);
-        $conn->close();
-        exit;
-    }
-
-    if (preg_match('/\s/', $tenDangNhap)) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Tên đăng nhập không được chứa khoảng trắng.'
+            'message' => 'Gmail không hợp lệ.'
         ], JSON_UNESCAPED_UNICODE);
         $conn->close();
         exit;
@@ -94,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Kiểm tra tên đăng nhập đã tồn tại chưa
+    // Kiểm tra gmail và số điện thoại đã tồn tại chưa
     $stmt = $conn->prepare('SELECT ma_tk FROM tai_khoan WHERE ten_dang_nhap = ?');
     $stmt->bind_param('s', $tenDangNhap);
     $stmt->execute();
@@ -103,7 +94,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($result->num_rows > 0) {
         echo json_encode([
             'success' => false,
-            'message' => 'Tên đăng nhập này đã được sử dụng. Vui lòng chọn tên khác.'
+            'message' => 'Gmail này đã được sử dụng,vui lòng chọn gmail khác.'
+        ], JSON_UNESCAPED_UNICODE);
+        $stmt->close();
+        $conn->close();
+        exit;
+    }
+
+    $stmt->close();
+
+    $stmt = $conn->prepare('SELECT ma_tk FROM tai_khoan WHERE so_dien_thoai = ?');
+    $stmt->bind_param('s', $soDienThoai);
+    $stmt->execute();
+    $phoneResult = $stmt->get_result();
+
+    if ($phoneResult->num_rows > 0) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Số điện thoại này đã được sử dụng,vui lòng chọn số khác.'
         ], JSON_UNESCAPED_UNICODE);
         $stmt->close();
         $conn->close();
@@ -127,18 +135,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $vaiTro = 'khach_hang';
     $stmt->bind_param('sssss', $hoTen, $tenDangNhap, $matKhau, $soDienThoai, $vaiTro);
 
-    if ($stmt->execute()) {
-        error_log("=== register.php: Đăng ký thành công cho: $tenDangNhap");
-        echo json_encode([
-            'success' => true,
-            'message' => 'Đăng ký thành công! Vui lòng đăng nhập.'
-        ], JSON_UNESCAPED_UNICODE);
-    } else {
-        error_log("=== register.php: Lỗi INSERT - " . $stmt->error);
-        echo json_encode([
-            'success' => false,
-            'message' => 'Lỗi đăng ký. Vui lòng thử lại sau.'
-        ], JSON_UNESCAPED_UNICODE);
+    try {
+        if ($stmt->execute()) {
+            error_log("=== register.php: Đăng ký thành công cho: $tenDangNhap");
+            echo json_encode([
+                'success' => true,
+                'message' => 'Đăng ký thành công! Bạn có thể đăng nhập ngay.'
+            ], JSON_UNESCAPED_UNICODE);
+        } else {
+            error_log("=== register.php: Lỗi INSERT - " . $stmt->error);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Đăng ký thất bại. Vui lòng thử lại sau.'
+            ], JSON_UNESCAPED_UNICODE);
+        }
+    } catch (mysqli_sql_exception $e) {
+        if (stripos($e->getMessage(), 'so_dien_thoai') !== false || stripos($e->getMessage(), 'ten_dang_nhap') !== false) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Gmail hoặc số điện thoại đã được đăng ký.'
+            ], JSON_UNESCAPED_UNICODE);
+        } else {
+            error_log("=== register.php: Exception - " . $e->getMessage());
+            echo json_encode([
+                'success' => false,
+                'message' => 'Đăng ký thất bại. Vui lòng thử lại sau.'
+            ], JSON_UNESCAPED_UNICODE);
+        }
     }
 
     $stmt->close();

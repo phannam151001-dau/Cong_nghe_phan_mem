@@ -24,13 +24,20 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', show
     e.preventDefault();
     setMessage({ text: '', type: '' });
 
-    if (!loginUser || !loginPass) {
-      setMessage({ text: 'Vui lòng nhập tên đăng nhập và mật khẩu.', type: 'error' });
+    const trimmedLoginUser = loginUser.trim();
+    if (!trimmedLoginUser || !loginPass) {
+      setMessage({ text: 'Vui lòng nhập gmail và mật khẩu.', type: 'error' });
+      return;
+    }
+
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(trimmedLoginUser)) {
+      setMessage({ text: 'Vui lòng nhập địa chỉ gmail hợp lệ.', type: 'error' });
       return;
     }
 
     try {
-      const data = await login(loginUser, loginPass);
+      const data = await login(trimmedLoginUser, loginPass);
       if (data.success) {
         showToast('Đăng nhập thành công!', 'success');
         onClose();
@@ -46,8 +53,15 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', show
     e.preventDefault();
     setMessage({ text: '', type: '' });
 
-    if (!regUser || !regName || !regPhone || !regPass || !regPassConfirm) {
+    const trimmedRegUser = regUser.trim();
+    if (!trimmedRegUser || !regName || !regPhone || !regPass || !regPassConfirm) {
       setMessage({ text: 'Vui lòng điền đầy đủ các thông tin.', type: 'error' });
+      return;
+    }
+
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(trimmedRegUser)) {
+      setMessage({ text: 'Vui lòng nhập gmail hợp lệ.', type: 'error' });
       return;
     }
 
@@ -62,7 +76,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', show
     }
 
     const formData = new FormData();
-    formData.append('ten_dang_nhap', regUser);
+    formData.append('ten_dang_nhap', trimmedRegUser);
     formData.append('ho_ten', regName);
     formData.append('so_dien_thoai', regPhone);
     formData.append('mat_khau', regPass);
@@ -105,11 +119,14 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', show
           {mode === 'login' && (
             <form className="auth-form" onSubmit={handleLoginSubmit}>
               <div>
-                <label>Tên đăng nhập</label>
+                <label>Gmail</label>
                 <input
-                  type="text"
+                  type="email"
+                  name="email"
+                  autoComplete="email"
+                  inputMode="email"
                   required
-                  placeholder="Nhập tên đăng nhập..."
+                  placeholder="Nhập gmail..."
                   value={loginUser}
                   onChange={(e) => setLoginUser(e.target.value)}
                 />
@@ -139,11 +156,14 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', show
           {mode === 'register' && (
             <form className="auth-form" onSubmit={handleRegisterSubmit}>
               <div>
-                <label>Tên đăng nhập (*)</label>
+                <label>Gmail (*)</label>
                 <input
-                  type="text"
+                  type="email"
+                  name="email"
+                  autoComplete="email"
+                  inputMode="email"
                   required
-                  placeholder="Tên đăng nhập..."
+                  placeholder="Nhập gmail..."
                   value={regUser}
                   onChange={(e) => setRegUser(e.target.value)}
                 />
