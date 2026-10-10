@@ -25,7 +25,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', show
     setMessage({ text: '', type: '' });
 
     if (!loginUser || !loginPass) {
-      setMessage({ text: 'Vui lòng nhập tên tài khoản và mật khẩu.', type: 'error' });
+      setMessage({ text: 'Vui lòng nhập tên đăng nhập và mật khẩu.', type: 'error' });
       return;
     }
 
@@ -94,7 +94,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', show
           </button>
 
           <h2>{mode === 'login' ? 'Đăng nhập' : 'Đăng ký tài khoản'}</h2>
-          <p>{mode === 'login' ? 'Nhập thông tin tài khoản để tiếp tục.' : 'Tạo tài khoản mới để sử dụng dịch vụ.'}</p>
+          <p>{mode === 'login' ? 'Nhập thông tin đăng nhập để tiếp tục.' : 'Tạo tài khoản mới để sử dụng dịch vụ.'}</p>
 
           {message.text && (
             <div className={`auth-message ${message.type}`} style={{ marginBottom: '1rem', display: 'block' }}>
@@ -105,7 +105,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', show
           {mode === 'login' && (
             <form className="auth-form" onSubmit={handleLoginSubmit}>
               <div>
-                <label>Tên tài khoản hoặc Số điện thoại</label>
+                <label>Tên đăng nhập</label>
                 <input
                   type="text"
                   required
@@ -139,11 +139,11 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', show
           {mode === 'register' && (
             <form className="auth-form" onSubmit={handleRegisterSubmit}>
               <div>
-                <label>Tên tài khoản (*)</label>
+                <label>Tên đăng nhập (*)</label>
                 <input
                   type="text"
                   required
-                  placeholder="Tên tài khoản..."
+                  placeholder="Tên đăng nhập..."
                   value={regUser}
                   onChange={(e) => setRegUser(e.target.value)}
                 />
