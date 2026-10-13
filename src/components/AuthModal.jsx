@@ -119,7 +119,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', show
           {mode === 'login' && (
             <form className="auth-form" onSubmit={handleLoginSubmit}>
               <div>
-                <label>Gmail</label>
+                <label>Tên Đăng Nhập Gmail</label>
                 <input
                   type="email"
                   name="email"
@@ -156,7 +156,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', show
           {mode === 'register' && (
             <form className="auth-form" onSubmit={handleRegisterSubmit}>
               <div>
-                <label>Gmail (*)</label>
+                <label>Tên Đăng Nhập Gmail (*)</label>
                 <input
                   type="email"
                   name="email"
