@@ -76,7 +76,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', show
     }
 
     const formData = new FormData();
-    formData.append('ten_dang_nhap', trimmedRegUser);
+    formData.append('gmail', trimmedRegUser);
     formData.append('ho_ten', regName);
     formData.append('so_dien_thoai', regPhone);
     formData.append('mat_khau', regPass);
@@ -119,7 +119,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', show
           {mode === 'login' && (
             <form className="auth-form" onSubmit={handleLoginSubmit}>
               <div>
-                <label>Tên Đăng Nhập Gmail</label>
+                <label>Gmail</label>
                 <input
                   type="email"
                   name="email"
@@ -156,7 +156,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', show
           {mode === 'register' && (
             <form className="auth-form" onSubmit={handleRegisterSubmit}>
               <div>
-                <label>Tên Đăng Nhập Gmail (*)</label>
+                <label>Gmail (*)</label>
                 <input
                   type="email"
                   name="email"

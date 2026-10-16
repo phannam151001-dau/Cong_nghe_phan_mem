@@ -7,7 +7,7 @@ require_once 'config.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $hoTen = trim($_POST['ho_ten'] ?? '');
-    $tenDangNhap = strtolower(trim($_POST['ten_dang_nhap'] ?? ''));
+    $tenDangNhap = strtolower(trim($_POST['gmail'] ?? ''));
     $soDienThoai = trim($_POST['so_dien_thoai'] ?? '');
     $matKhau = trim($_POST['mat_khau'] ?? '');
     $matKhauConfirm = trim($_POST['mat_khau_confirm'] ?? '');
@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Kiểm tra gmail và số điện thoại đã tồn tại chưa
-    $stmt = $conn->prepare('SELECT ma_tk FROM tai_khoan WHERE ten_dang_nhap = ?');
+    $stmt = $conn->prepare('SELECT ma_tk FROM tai_khoan WHERE gmail = ?');
     $stmt->bind_param('s', $tenDangNhap);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -124,14 +124,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $conn->query("CREATE TABLE IF NOT EXISTS `tai_khoan` (
         `ma_tk` INT AUTO_INCREMENT PRIMARY KEY,
         `ho_ten` VARCHAR(100) NOT NULL,
-        `ten_dang_nhap` VARCHAR(50) NOT NULL UNIQUE,
+        `gmail` VARCHAR(50) NOT NULL UNIQUE,
         `mat_khau` VARCHAR(100) NOT NULL,
         `so_dien_thoai` VARCHAR(20) DEFAULT NULL,
         `vai_tro` VARCHAR(20) NOT NULL DEFAULT 'khach_hang'
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
     // Insert new user
-    $stmt = $conn->prepare('INSERT INTO tai_khoan (ho_ten, ten_dang_nhap, mat_khau, so_dien_thoai, vai_tro) VALUES (?, ?, ?, ?, ?)');
+    $stmt = $conn->prepare('INSERT INTO tai_khoan (ho_ten, gmail, mat_khau, so_dien_thoai, vai_tro) VALUES (?, ?, ?, ?, ?)');
     $vaiTro = 'khach_hang';
     $stmt->bind_param('sssss', $hoTen, $tenDangNhap, $matKhau, $soDienThoai, $vaiTro);
 
@@ -150,7 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ], JSON_UNESCAPED_UNICODE);
         }
     } catch (mysqli_sql_exception $e) {
-        if (stripos($e->getMessage(), 'so_dien_thoai') !== false || stripos($e->getMessage(), 'ten_dang_nhap') !== false) {
+        if (stripos($e->getMessage(), 'so_dien_thoai') !== false || stripos($e->getMessage(), 'gmail') !== false) {
             echo json_encode([
                 'success' => false,
                 'message' => 'Gmail hoặc số điện thoại đã được đăng ký.'

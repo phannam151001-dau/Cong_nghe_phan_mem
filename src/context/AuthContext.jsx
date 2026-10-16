@@ -16,6 +16,7 @@ export function AuthProvider({ children }) {
     loggedIn: false,
     userId: null,
     userName: '',
+    userPhone: '',
     userRole: 'user',
   });
   const [loading, setLoading] = useState(true);
@@ -32,8 +33,9 @@ export function AuthProvider({ children }) {
       localStorage.removeItem('sancopro_logged_in');
       localStorage.removeItem('sancopro_user_id');
       localStorage.removeItem('sancopro_user_name');
+      localStorage.removeItem('sancopro_user_phone');
       localStorage.removeItem('sancopro_user_role');
-      setAuthState({ loggedIn: false, userId: null, userName: '', userRole: 'user' });
+      setAuthState({ loggedIn: false, userId: null, userName: '', userPhone: '', userRole: 'user' });
       setLoading(false);
       return;
     }
@@ -41,6 +43,7 @@ export function AuthProvider({ children }) {
     const localLoginFlag = localStorage.getItem('sancopro_logged_in') === '1';
     const localUserId = parseInt(localStorage.getItem('sancopro_user_id') || '0', 10) || null;
     const localUserName = localStorage.getItem('sancopro_user_name') || '';
+    const localUserPhone = localStorage.getItem('sancopro_user_phone') || '';
     const localUserRole = normalizeRole(localStorage.getItem('sancopro_user_role') || 'user');
 
     try {
@@ -55,6 +58,7 @@ export function AuthProvider({ children }) {
         loggedIn: isLoggedIn,
         userId: data.userId || null,
         userName: data.userName || '',
+        userPhone: data.userPhone || '',
         userRole: normalizedRole,
       };
 
@@ -64,11 +68,13 @@ export function AuthProvider({ children }) {
         localStorage.setItem('sancopro_logged_in', '1');
         if (data.userId) localStorage.setItem('sancopro_user_id', String(data.userId));
         if (data.userName) localStorage.setItem('sancopro_user_name', data.userName);
+        localStorage.setItem('sancopro_user_phone', data.userPhone || '');
         localStorage.setItem('sancopro_user_role', normalizedRole);
       } else {
         localStorage.removeItem('sancopro_logged_in');
         localStorage.removeItem('sancopro_user_id');
         localStorage.removeItem('sancopro_user_name');
+        localStorage.removeItem('sancopro_user_phone');
         localStorage.removeItem('sancopro_user_role');
       }
     } catch (error) {
@@ -77,6 +83,7 @@ export function AuthProvider({ children }) {
         loggedIn: localLoginFlag,
         userId: localUserId,
         userName: localUserName,
+        userPhone: localUserPhone,
         userRole: localUserRole,
       });
     } finally {
@@ -90,7 +97,7 @@ export function AuthProvider({ children }) {
 
   const login = async (username, password) => {
     const formData = new FormData();
-    formData.append('ten_dang_nhap', username);
+    formData.append('gmail', username);
     formData.append('mat_khau', password);
 
     const response = await fetch('/login.php', {
@@ -141,8 +148,9 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('sancopro_logged_in');
     localStorage.removeItem('sancopro_user_id');
     localStorage.removeItem('sancopro_user_name');
+    localStorage.removeItem('sancopro_user_phone');
     localStorage.removeItem('sancopro_user_role');
-    setAuthState({ loggedIn: false, userId: null, userName: '', userRole: 'user' });
+    setAuthState({ loggedIn: false, userId: null, userName: '', userPhone: '', userRole: 'user' });
     // Redirect to index page to clear query params if any
     window.location.href = '/';
   };

@@ -40,7 +40,7 @@ export default function BookingModal({
   const [selectedServices, setSelectedServices] = useState([]);
   const [confirmedQrPayload, setConfirmedQrPayload] = useState('');
   const [customerName, setCustomerName] = useState(authState.userName || '');
-  const [customerPhone, setCustomerPhone] = useState('');
+  const [customerPhone, setCustomerPhone] = useState(authState.userPhone || '');
   const [customerNote, setCustomerNote] = useState('');
 
   useEffect(() => {
@@ -50,15 +50,23 @@ export default function BookingModal({
   }, [authState.userName]);
 
   useEffect(() => {
+    if (authState.userPhone) {
+      setCustomerPhone(authState.userPhone);
+    }
+  }, [authState.userPhone]);
+
+  useEffect(() => {
     if (isOpen) {
       setStep(1);
       setBookingDate(getOffsetDateString(0));
       setSelectedSlots([]);
       setSelectedServices([]);
       setConfirmedQrPayload('');
+      setCustomerName(authState.userName || '');
+      setCustomerPhone(authState.userPhone || '');
       setCustomerNote('');
     }
-  }, [isOpen, pitch]);
+  }, [isOpen, pitch, authState.userName, authState.userPhone]);
 
   if (!isOpen || !pitch) return null;
 

@@ -59,7 +59,7 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $tenDangNhapInput = strtolower(trim($_POST['ten_dang_nhap'] ?? ''));
+    $tenDangNhapInput = strtolower(trim($_POST['gmail'] ?? ''));
     $matKhau = trim($_POST['mat_khau'] ?? '');
 
     if ($tenDangNhapInput === '' || $matKhau === '') {
@@ -69,9 +69,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     else {
 
        $stmt = $conn->prepare(
-    'SELECT ma_tk, ho_ten, ten_dang_nhap, mat_khau, vai_tro
+    'SELECT ma_tk, ho_ten, gmail, mat_khau, so_dien_thoai, vai_tro
      FROM tai_khoan
-     WHERE ten_dang_nhap = ?'
+     WHERE gmail = ?'
 );
 
 if ($stmt === false) {
@@ -87,8 +87,9 @@ if ($stmt === false) {
                 $_SESSION['logged_in'] = true;
                 $_SESSION['user_id'] = $user['ma_tk'];
                 $_SESSION['user_name'] = $user['ho_ten'];
+                $_SESSION['user_phone'] = $user['so_dien_thoai'] ?? '';
                 $_SESSION['user_role'] = $user['vai_tro'];
-                $_SESSION['username'] = $user['ten_dang_nhap'];
+                $_SESSION['username'] = $user['gmail'];
 
                 $roleRedirect = getRoleRedirect($user['vai_tro']);
                 $redirectTo = $roleRedirect;
@@ -123,5 +124,4 @@ if (isset($conn) && $conn) {
     $conn->close();
 }
 ?>
-
 
